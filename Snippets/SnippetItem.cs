@@ -1,135 +1,124 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿namespace Snippets;
 
-namespace Snippets
+internal partial class SnippetItem : UserControl
 {
-    internal partial class SnippetItem : UserControl
-    {
-        internal const float LERP_AMOUNT = 35f;
-        internal static readonly Color BACK_COLOR_DEFAULT = Color.FromArgb(39, 44, 54);
-        internal static readonly Color BACK_COLOR_HOVER = Color.FromArgb(33, 38, 48);
+    internal const float LERP_AMOUNT = 35f;
+    internal static readonly Color BACK_COLOR_DEFAULT = Color.FromArgb(39, 44, 54);
+    internal static readonly Color BACK_COLOR_HOVER = Color.FromArgb(33, 38, 48);
+    private SnippetsDataObject _snippetPreview;
 
-        internal bool hovered = false;
-        internal Color goalColor = BACK_COLOR_DEFAULT;
-        internal Color backColor = BACK_COLOR_DEFAULT;
+    private string _snippetTitle;
+    internal Color backColor = BACK_COLOR_DEFAULT;
+    internal Color goalColor = BACK_COLOR_DEFAULT;
 
-        private string _snippetTitle;
-        private SnippetsDataObject _snippetPreview;
+    internal bool hovered;
 
-        private bool? isPreviewLabel = null;
-        private void SetPreviewToLabel()
-        {
-            if (isPreviewLabel != null && isPreviewLabel == true)
-                return;
-            isPreviewLabel = true;
-
-            pictureBox.Hide();
-            labelDescription.Show();
-        }
-        private void SetPreviewToImage(int width, int height)
-        {
-            if (isPreviewLabel != null && isPreviewLabel == false)
-                return;
-            isPreviewLabel = false;
-
-            pictureBox.Show();
-            labelDescription.Hide();
-
-            int maxWidth = Width - 20;
-
-            if(width > maxWidth)
-            {
-                float shrinkRatio = (float)width / maxWidth;
-                width = maxWidth;
-                height = (int)Math.Round((float)height / shrinkRatio);
-            }
-            
-            float whRatio = (float)width / height;
-            pictureBox.Height = height;
-            pictureBox.Width = width;
-        }
-
-        internal string SnippetTitle
-        {
-            get => _snippetTitle;
-            set
-            {
-                _snippetTitle = value;
-                labelKey.Text = value;
-            }
-        }
-        internal SnippetsDataObject SnippetPreview
-        {
-            get => _snippetPreview;
-            set
-            {
-                _snippetPreview = value;
-
-                if (value.data == null)
-                    throw new NullReferenceException("No valid data in this SnippetsDataObject.");
-
-                if (value.IsPreviewString)
-                {
-                    SetPreviewToLabel();
-                    labelDescription.Text = value.GetPreviewString();
-                    Height = labelDescription.Bottom + 10;
-                }
-                else if (value.type == SnippetsDataObject.FormatType.Image)
-                {
-                    Image image = (Image)value.data;
-                    SetPreviewToImage(image.Width, image.Height);
-                    pictureBox.BackgroundImage = image;
-                    pictureBox.BackgroundImageLayout = ImageLayout.Zoom;
-                    Height = pictureBox.Bottom + 10; // 10 px of padding from the bottom
-                }
-                else
-                {
-                    throw new NullReferenceException("Trying to display a SnippetsDataObject with no data in it.");
-                }
-            }
-        }
+    private bool? isPreviewLabel;
 
 #pragma warning disable CS8618
-        internal SnippetItem(string snippetTitle, SnippetsDataObject snippetPreview)
+    internal SnippetItem(string snippetTitle, SnippetsDataObject snippetPreview)
 #pragma warning restore CS8618
-        {
-            InitializeComponent();
+    {
+        InitializeComponent();
 
-            _snippetTitle = snippetTitle;
-            _snippetPreview = snippetPreview;
+        this._snippetTitle = snippetTitle;
+        this._snippetPreview = snippetPreview;
 
-            // event handlers
-            this.MouseEnter += HoverStart;
-            this.MouseLeave += HoverEnd;
-        }
-        private void SnippetItem_Load(object sender, EventArgs e)
+        // event handlers
+        this.MouseEnter += HoverStart;
+        this.MouseLeave += HoverEnd;
+    }
+
+    internal string SnippetTitle
+    {
+        get => this._snippetTitle;
+        set
         {
-            // fields
-            this.SnippetTitle = _snippetTitle;
-            this.SnippetPreview = _snippetPreview;
+            this._snippetTitle = value;
+            this.labelKey.Text = value;
+        }
+    }
+    internal SnippetsDataObject SnippetPreview
+    {
+        get => this._snippetPreview;
+        set
+        {
+            this._snippetPreview = value;
+
+            if (value.data == null)
+                throw new NullReferenceException("No valid data in this SnippetsDataObject.");
+
+            if (value.IsPreviewString)
+            {
+                SetPreviewToLabel();
+                this.labelDescription.Text = value.GetPreviewString();
+                this.Height = this.labelDescription.Bottom + 10;
+            }
+            else if (value.type == SnippetsDataObject.FormatType.Image)
+            {
+                var image = (Image) value.data;
+                SetPreviewToImage(image.Width, image.Height);
+                this.pictureBox.BackgroundImage = image;
+                this.pictureBox.BackgroundImageLayout = ImageLayout.Zoom;
+                this.Height = this.pictureBox.Bottom + 10; // 10 px of padding from the bottom
+            }
+            else
+            {
+                throw new NullReferenceException("Trying to display a SnippetsDataObject with no data in it.");
+            }
+        }
+    }
+    private void SetPreviewToLabel()
+    {
+        if (this.isPreviewLabel != null && this.isPreviewLabel == true)
+            return;
+        this.isPreviewLabel = true;
+
+        this.pictureBox.Hide();
+        this.labelDescription.Show();
+    }
+    private void SetPreviewToImage(int width, int height)
+    {
+        if (this.isPreviewLabel != null && this.isPreviewLabel == false)
+            return;
+        this.isPreviewLabel = false;
+
+        this.pictureBox.Show();
+        this.labelDescription.Hide();
+
+        int maxWidth = this.Width - 20;
+
+        if (width > maxWidth)
+        {
+            float shrinkRatio = (float) width / maxWidth;
+            width = maxWidth;
+            height = (int) Math.Round(height / shrinkRatio);
         }
 
-        internal void AnimationTick(float deltaTime)
-        {
-            backColor = Visuals.Interpolate(backColor, goalColor, deltaTime * LERP_AMOUNT);
-            BackColor = backColor;
-        }
-        internal void HoverStart(object? sender, EventArgs e)
-        {
-            hovered = true;
-            goalColor = BACK_COLOR_HOVER;
-        }
-        internal void HoverEnd(object? sender, EventArgs e)
-        {
-            hovered = false;
-            goalColor = BACK_COLOR_DEFAULT;
-        }
+        float whRatio = (float) width / height;
+        this.pictureBox.Height = height;
+        this.pictureBox.Width = width;
+    }
+    private void SnippetItem_Load(object sender, EventArgs e)
+    {
+        // fields
+        this.SnippetTitle = this._snippetTitle;
+        this.SnippetPreview = this._snippetPreview;
+    }
+
+    internal void AnimationTick(float deltaTime)
+    {
+        this.backColor = Visuals.Interpolate(this.backColor, this.goalColor, deltaTime * LERP_AMOUNT);
+        this.BackColor = this.backColor;
+    }
+    internal void HoverStart(object? sender, EventArgs e)
+    {
+        this.hovered = true;
+        this.goalColor = BACK_COLOR_HOVER;
+    }
+    internal void HoverEnd(object? sender, EventArgs e)
+    {
+        this.hovered = false;
+        this.goalColor = BACK_COLOR_DEFAULT;
     }
 }
