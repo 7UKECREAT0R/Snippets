@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Snippets": {
+      "commandName": "Project",
+      "commandLineArgs": "/startup",
+      "nativeDebugging": false
+    }
+  }
+}
